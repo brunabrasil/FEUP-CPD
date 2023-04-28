@@ -34,18 +34,17 @@ public class Authentication {
 
     // Method to authenticate a player with a username and password
     public static boolean authenticatePlayer(String username, String password) {
-        try (BufferedReader reader = new BufferedReader(new FileReader(Registration.REGISTRATION_FILE))) {
-            String line;
-            while ((line = reader.readLine()) != null) {
-                String[] parts = line.split(",");
-                if (parts.length == 2 && parts[0].equals(username) && parts[1].equals(password)) {
-                    return true; // Username and password match
-                }
+        if(Server.lockDB.tryLock()) {
+            Player player = Server.users.get(username);
+
+            //conferir se username e passe estao certas e que o player nao esta ja logado
+            if(!player.isLoggedIn() && player.getUsername().equals(username) && player.getPassword().equals(password)) {
+                Server.lockDB.unlock();
+                return true;
             }
-        } catch (IOException e) {
-            System.out.println("Failed to authenticate player: " + e.getMessage());
         }
-        return false; // Username and password do not match or not found
+        Server.lockDB.unlock();
+        return false;
     }
 
     // Method to generate a random token (example implementation)
