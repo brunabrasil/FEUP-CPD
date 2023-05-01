@@ -6,39 +6,37 @@ import java.util.HashMap;
 import java.util.Random;
 
 public class Authentication {
-    private static HashMap<String, String> tokenToPlayerMap; // Map to store token-to-player mapping
 
     public Authentication() {
-        tokenToPlayerMap = new HashMap<>();
+
     }
 
     // Method to generate and return a new token for a player
     public static String generateToken(String playerName) {
         String token = generateRandomToken(); // Generate a random token
-        tokenToPlayerMap.put(token, playerName); // Store token-to-player mapping
+        Server.userTokens.put(playerName, token); // Store token-to-player mapping
         return token;
     }
 
     // Method to validate a token and return the associated player name
     public String getPlayerName(String token) {
-        if (tokenToPlayerMap.containsKey(token)) {
-            return tokenToPlayerMap.get(token);
+        if (Server.userTokens.containsValue(token)) {  //acho que nao é a melhor forma
+            return Server.userTokens.get(token);
         }
         return null; // Token not found, invalid or expired
     }
 
-    // Method to remove a token when a player logs out or disconnects
-    public void removeToken(String token) {
-        tokenToPlayerMap.remove(token);
+    // Method to remove a token when a player logs out
+    public void removeToken(String playerName) {
+        Server.userTokens.remove(playerName);
     }
 
     // Method to authenticate a player with a username and password
     public static boolean authenticatePlayer(String username, String password) {
         if(Server.lockDB.tryLock()) {
             Player player = Server.users.get(username);
-
-            //conferir se username e passe estao certas e que o player nao esta ja logado
-            if(!player.isLoggedIn() && player.getUsername().equals(username) && player.getPassword().equals(password)) {
+            //conferir se username e passe estao certas e (FALTA) que o player nao esta ja logado
+            if(player.getUsername().equals(username) && player.getPassword().equals(password)) {
                 Server.lockDB.unlock();
                 return true;
             }
