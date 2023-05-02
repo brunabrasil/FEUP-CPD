@@ -34,12 +34,15 @@ public class Authentication {
     // Method to authenticate a player with a username and password
     public static boolean authenticatePlayer(String username, String password) {
         if(Server.lockDB.tryLock()) {
-            Player player = Server.users.get(username);
-            //conferir se username e passe estao certas e (FALTA) que o player nao esta ja logado
-            if(player.getUsername().equals(username) && player.getPassword().equals(password)) {
-                Server.lockDB.unlock();
-                return true;
+            if(Server.users.containsKey(username)){
+                Player player = Server.users.get(username);
+                //conferir se username e passe estao certas e (FALTA) que o player nao esta ja logado
+                if(player.getUsername().equals(username) && player.getPassword().equals(password)) {
+                    Server.lockDB.unlock();
+                    return true;
+                }
             }
+
         }
         Server.lockDB.unlock();
         return false;
