@@ -21,7 +21,7 @@ public class AuthenticationThread extends Thread {
     }
 
     public void run() {
-        do {
+        while(true) {
             try {
                 String message = reader.readLine();
                 if (message.split(" ")[0].equals("login")) {
@@ -79,7 +79,8 @@ public class AuthenticationThread extends Thread {
                 System.out.println("Server exception: " + ex.getMessage());
                 ex.printStackTrace();
             }
-        } while(true);
+        }
+        System.out.println("saiii");
     }
 
 }

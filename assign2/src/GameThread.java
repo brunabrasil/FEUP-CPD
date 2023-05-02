@@ -10,45 +10,26 @@ import proj.*;
 public class GameThread extends Thread {
 
     //private static final int MAX_NUM_TRIES = 6; // Maximum number of tries for each player
-    // private static Map<String, GameData> gameDataMap = new ConcurrentHashMap<>(); // Map to store game data for each player
+    private List<Socket> sockets;
+    String gameId;
+    List<Player> gamePlayers;
+    private BufferedReader reader;
+    private PrintWriter writer;
 
-    private Socket socket;
-    private ReentrantLock lock = new ReentrantLock();
-    private String playerId; // Player ID or username
-
-    public GameThread(Socket userSockets){
-        this.socket = userSockets;
+    public GameThread(List <Player> userSockets, String gameId, List<Player> gamePlayers){
+        //this.sockets = userSockets;
+        /*try {
+            this.reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+            this.writer = new PrintWriter(socket.getOutputStream(), true);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }*/
+        this.gameId = gameId;
+        this.gamePlayers = gamePlayers;
     }
 
     public void run() {
-        try {
-            InputStream input = socket.getInputStream();
-            BufferedReader reader = new BufferedReader(new InputStreamReader(input));
-
-            String wordChosen = chooseWord();
-            List<Map.Entry<Character, Boolean>> charList = getCharList(wordChosen);
-            int numOfTries = 3;
-
-            String letter;
-            while(!Objects.equals(letter = reader.readLine(), "exit")){
-                System.out.println("Letter: "+ letter);
-                //verificar se letra ta na palavra
-                updateNumOfTries();
-                OutputStream output = socket.getOutputStream();
-                PrintWriter writer = new PrintWriter(output, true);
-                writer.println(Hangman.getHangman(numOfTries, charList));
-            }
-
-            lock.lock();
-            OutputStream output = socket.getOutputStream();
-            PrintWriter writer = new PrintWriter(output, true);
-            writer.println(numOfTries);
-            lock.unlock();
-
-        } catch (IOException ex) {
-            System.out.println("Server exception: " + ex.getMessage());
-            ex.printStackTrace();
-        }
+        System.out.println("gamee");
     }
 
     private String chooseWord() {
@@ -69,9 +50,9 @@ public class GameThread extends Thread {
     }
 
 
-    public void updateNumOfTries(){
+    /*public void updateNumOfTries(){
         lock.lock();
         int numOfTries = 1;
         lock.unlock();
-    }
+    }*/
 }
