@@ -62,7 +62,9 @@ public class Client {
                 if(response.split(" ")[1].equals("successfully")){
                     break;
                 }
-
+            }
+            while(true){
+                //gameloop
             }
         } catch (UnknownHostException ex) {
 
