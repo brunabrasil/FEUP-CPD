@@ -11,33 +11,35 @@ public class Registration {
     public static final String REGISTRATION_FILE = "registration.txt"; // File to store registration data
 
     // Method to register a new user with a username and password
-    public static String registerUser(String username, String password) {
+    public static Player registerUser(String username, String password) {
         //username ja existe
         if(Server.lockDB.tryLock()) {
             if (Server.users.containsKey(username)) {
                 Server.lockDB.unlock();
-                return "failed - Username already exists";
+                return null;
             } else {
 
                 try (FileWriter writer = new FileWriter(REGISTRATION_FILE, true)) {
                     // Append the username and password to the registration file
                     writer.write(username + "," + password + System.lineSeparator());
                     writer.flush(); //limpa a stream
+
                     // adicionar ao map
-                    Server.users.put(username, new Player(username, password));
+                    Player p = new Player(username, password, null);
+                    Server.users.put(username, p);
                     Server.lockDB.unlock();
-                    return "success";
+                    return p;
                 } catch (IOException e) {
                     System.out.println("Failed to register user");
                     Server.lockDB.unlock();
-                    return "failed ";
+                    return null;
                 }
 
 
             }
         }
         Server.lockDB.unlock();
-        return "failed";
+        return null;
     }
 
     public static Map<String, Player> readUserFile() {
@@ -57,7 +59,7 @@ public class Registration {
             while (( line = reader.readLine()) != null) {
                 String[] data = line.split(",");
                 if (data.length == 2) {
-                    users.put(data[0], new Player(data[0], data[1]));
+                    users.put(data[0], new Player(data[0], data[1], null));
                 }
             }
         } catch (IOException e) {
