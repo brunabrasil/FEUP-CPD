@@ -2,7 +2,10 @@
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.Random;
 
 public class Authentication {
@@ -11,24 +14,12 @@ public class Authentication {
 
     }
 
-    // Method to generate and return a new token for a player
-    public static String generateToken(String playerName) {
+    public static TokenWithExpiration generateToken(String playerName, int expirationDays) {
         String token = generateRandomToken(); // Generate a random token
-        Server.userTokens.put(playerName, token); // Store token-to-player mapping
-        return token;
-    }
+        LocalDateTime expirationDate = LocalDateTime.now().plus(expirationDays, ChronoUnit.DAYS);
+        TokenWithExpiration tokenWithExpiration = new TokenWithExpiration(token, expirationDate);
 
-    // Method to validate a token and return the associated player name
-    public String getPlayerName(String token) {
-        if (Server.userTokens.containsValue(token)) {  //acho que nao é a melhor forma
-            return Server.userTokens.get(token);
-        }
-        return null; // Token not found, invalid or expired
-    }
-
-    // Method to remove a token when a player logs out
-    public void removeToken(String playerName) {
-        Server.userTokens.remove(playerName);
+        return tokenWithExpiration;
     }
 
     // Method to authenticate a player with a username and password
@@ -65,4 +56,5 @@ public class Authentication {
 
         return sb.toString();
     }
+
 }

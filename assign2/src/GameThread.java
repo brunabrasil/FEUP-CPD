@@ -32,7 +32,7 @@ public class GameThread extends Thread {
         System.out.println("gamee");
     }
 
-    private String chooseWord() {
+    /*private String chooseWord() {
         // Choose a word randomly from a list
         List<String> word = Arrays.asList("Apple", "Bicycle", "Elephant", "Garden", "Monkey", "Pizza", "Rainbow", "Soccer", "Jazz", "Hamburger");
         Random random = new Random();
@@ -47,7 +47,7 @@ public class GameThread extends Thread {
             pairs.add(new AbstractMap.SimpleEntry<>(c, false));
         }
         return pairs;
-    }
+    }*/
 
 
     /*public void updateNumOfTries(){

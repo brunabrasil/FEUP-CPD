@@ -15,11 +15,10 @@ import java.util.concurrent.locks.ReentrantLock;
 public class Server {
     private static int poolsize = 2;
     private static ExecutorService executor;
-    protected static Map<String, Player> users;
+    protected static Map<String, Player> users = new HashMap<>();
     protected static ReentrantLock lockDB = new ReentrantLock();
     protected static ReentrantLock lockPlayersQueue = new ReentrantLock();
     protected static ReentrantLock lockToken = new ReentrantLock();
-    protected static HashMap<String, String> userTokens  = new HashMap<>(); // Map to store token-to-player mapping
     protected static Queue<Player> playersQueue = new LinkedList<>();
     private static Map<String, String> userCurrentGame = new HashMap<>();
     private static Map<String, List<Player>> playersInGame = new HashMap<>();
@@ -66,7 +65,6 @@ public class Server {
                 AuthenticationThread thread = new AuthenticationThread(socket);
                 System.out.println("Starting new Thread");
                 thread.start();
-
 
 
             }
