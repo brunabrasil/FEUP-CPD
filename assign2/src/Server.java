@@ -2,6 +2,7 @@
 import java.io.*;
 import java.net.*;
 import java.nio.channels.ServerSocketChannel;
+import java.nio.channels.SocketChannel;
 import java.time.LocalTime;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
@@ -29,7 +30,10 @@ public class Server {
         users = Registration.readUserFile();
         executor = Executors.newFixedThreadPool(poolsize);
 
-        try (ServerSocket serverSocket = new ServerSocket(port)) {
+        try  {
+            ServerSocketChannel serverSocketChannel = ServerSocketChannel.open();
+            serverSocketChannel.bind(new InetSocketAddress(port));
+            ServerSocket serverSocket = serverSocketChannel.socket();
             System.out.println("Server is listening on port " + port);
             int timesPrinted = 0;
             while (true) {
@@ -55,9 +59,9 @@ public class Server {
                     }*/
                     executor.submit(new GameThread(gamePlayers, gameId));
                 }
-
-                Socket socket = serverSocket.accept();
-                AuthenticationThread thread = new AuthenticationThread(socket);
+                SocketChannel clientChannel = serverSocketChannel.accept();
+                Socket clientSocket = clientChannel.socket();
+                AuthenticationThread thread = new AuthenticationThread(clientSocket);
                 System.out.println("Starting new Thread");
                 thread.start();
 
