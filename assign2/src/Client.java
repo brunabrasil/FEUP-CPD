@@ -10,9 +10,9 @@ public class Client {
     public static void main(String[] args) throws IOException {
         if (args.length < 2) return;
 
-
         String hostname = args[0];
         int port = Integer.parseInt(args[1]);
+
         SocketChannel socketChannel = SocketChannel.open();
         socketChannel.connect(new InetSocketAddress(hostname, port));
         Socket socket = socketChannel.socket();
@@ -78,9 +78,17 @@ public class Client {
             String response = reader.readLine();
             System.out.println(response);
 
-            if(response.split(" ")[0].equals("login")){
-                if(response.split(" ")[1].equals("failed")){
+            if (response.split(" ")[1].equals("successfully")){
 
+                try (FileWriter fileWriter = new FileWriter("token_" + username + ".txt")) {
+                    fileWriter.write(response.split(" ")[2]);
+                } catch (IOException e) {
+                    // Handle the exception appropriately
+                }
+                break;
+            }
+            else if(response.split(" ")[1].equals("failed")){
+                if(response.split(" ")[0].equals("login")){
                     File tokenFile = new File("token_" + username + ".txt");
                     if (tokenFile.exists()) {
                         if (tokenFile.delete()) {
@@ -89,22 +97,28 @@ public class Client {
                             System.out.println("Failed to delete token file");
                         }
                     }
-                    continue;
-                }
-                else if (response.split(" ")[1].equals("successfully")){
-
-                    try (FileWriter fileWriter = new FileWriter("token_" + username + ".txt")) {
-                        fileWriter.write(response.split(" ")[2]);
-                    } catch (IOException e) {
-                        // Handle the exception appropriately
-                    }
-                    break;
                 }
 
+                continue;
             }
+
         }
 
+        //game
+        String message = SocketChannelUtils.receiveString(socketChannel);
+        System.out.println(message);
 
+        if(message.equals("game started")){
+            while (true){
+                System.out.println("Choose a number to guess [1-100]");
+                String guess = scan.nextLine();
+                //FALTA: ver se ta nesse intervalo
+                SocketChannelUtils.sendString(socketChannel, guess);
+
+                System.out.println(SocketChannelUtils.receiveString(socketChannel));
+            }
+
+        }
     }
 
 }
