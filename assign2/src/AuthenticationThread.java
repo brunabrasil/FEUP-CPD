@@ -1,6 +1,7 @@
 
 import java.io.*;
 import java.net.*;
+import java.nio.channels.SocketChannel;
 import java.util.*;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -44,14 +45,14 @@ public class AuthenticationThread extends Thread {
                         TokenWithExpiration token;
                         if(t != null){
                             token = player.getPlayerToken();
-                            if(!token.getToken().equals(t) || token.hasExpired()){
+                            /*if(!token.getToken().equals(t) || token.hasExpired()){
 
                                 //colocar a nulo o token
                                 player.setToken(null);
 
                                 writer.println("login failed problem with token");
                                 break;
-                            }
+                            }*/
                         }
                         else {
                             token = Authentication.generateToken(username, 1);
@@ -63,6 +64,7 @@ public class AuthenticationThread extends Thread {
                             Server.lockPlayersQueue.unlock();
 
                         }
+                        player.setChannel(this.socket.getChannel());
                         writer.println("login successfully " + token.getToken());
 
                         break;

@@ -1,6 +1,10 @@
 
 import java.io.*;
 import java.net.*;
+import java.nio.channels.SelectionKey;
+import java.nio.channels.Selector;
+import java.nio.channels.ServerSocketChannel;
+import java.nio.channels.SocketChannel;
 import java.util.*;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -15,8 +19,8 @@ public class GameThread extends Thread {
     List<Player> gamePlayers;
     private BufferedReader reader;
     private PrintWriter writer;
-
-    public GameThread(List <Player> userSockets, String gameId, List<Player> gamePlayers){
+    private  ServerSocketChannel serverSocketChannel;
+    public GameThread(List <Player> players, String gameId){
         //this.sockets = userSockets;
         /*try {
             this.reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
@@ -25,11 +29,56 @@ public class GameThread extends Thread {
             e.printStackTrace();
         }*/
         this.gameId = gameId;
-        this.gamePlayers = gamePlayers;
+        this.gamePlayers = players;
     }
 
     public void run() {
-        System.out.println("gamee");
+        try {
+            Selector selector = Selector.open();
+            registerSocketChannel(selector);
+            while (true){
+                selector.select();
+                Iterator<SelectionKey> iterator = selector.selectedKeys().iterator();
+
+                while (iterator.hasNext()){
+                    SelectionKey key = iterator.next();
+                    iterator.remove();
+
+                    if(!key.isValid()){
+                        continue;
+                    }
+                    if(key.isReadable()){
+                        read(key);
+                    }
+                }
+
+            }
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void read(SelectionKey key) throws IOException {
+        SocketChannel clientChannel = (SocketChannel) key.channel();
+
+        String messageReceived = SocketChannelUtils.receiveString(clientChannel);
+        System.out.println(messageReceived);
+    }
+
+    private void accept(Selector selector, ServerSocketChannel serverSocketChannel) throws IOException {
+        SocketChannel playerChannel = serverSocketChannel.accept();
+        playerChannel.configureBlocking(false);
+
+        playerChannel.register(selector,SelectionKey.OP_READ);
+        SocketChannelUtils.sendString(playerChannel,"JOGO COMEÇOU");
+    }
+    public void registerSocketChannel(Selector sel) throws IOException{
+        for (Player player: gamePlayers){
+            SocketChannel socketChannel = player.getChannel();
+            socketChannel.register(sel, SelectionKey.OP_READ);
+            SocketChannelUtils.sendString(socketChannel, "JOGO COMEÇOUU");
+        }
     }
 
     /*private String chooseWord() {
