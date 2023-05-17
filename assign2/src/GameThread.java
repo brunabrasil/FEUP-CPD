@@ -19,15 +19,10 @@ public class GameThread extends Thread {
     List<Player> gamePlayers;
     private BufferedReader reader;
     private PrintWriter writer;
-    private  ServerSocketChannel serverSocketChannel;
+    private ServerSocketChannel serverSocketChannel;
+    private int num = 5;
+
     public GameThread(List <Player> players, String gameId){
-        //this.sockets = userSockets;
-        /*try {
-            this.reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-            this.writer = new PrintWriter(socket.getOutputStream(), true);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }*/
         this.gameId = gameId;
         this.gamePlayers = players;
     }
@@ -36,6 +31,7 @@ public class GameThread extends Thread {
         try {
             Selector selector = Selector.open();
             registerSocketChannel(selector);
+
             while (true){
                 selector.select();
                 Iterator<SelectionKey> iterator = selector.selectedKeys().iterator();
@@ -48,8 +44,10 @@ public class GameThread extends Thread {
                         continue;
                     }
                     if(key.isReadable()){
-                        read(key);
+                        String response = read(key);
+                        readGuess(key, response);
                     }
+
                 }
 
             }
@@ -59,49 +57,44 @@ public class GameThread extends Thread {
         }
     }
 
-    private void read(SelectionKey key) throws IOException {
+    private void readGuess(SelectionKey key, String guess) throws IOException {
+        SocketChannel clientChannel = (SocketChannel) key.channel();
+
+        if (guess != null) {
+            int clientNumber = Integer.parseInt(guess);
+            String message;
+
+            if (clientNumber == num) {
+                message = "Correct guess!";
+            } else if (clientNumber > num) {
+                message = "Too high!";
+            } else {
+                message = "Too low!";
+            }
+
+            SocketChannelUtils.sendString(clientChannel, message);
+        }
+    }
+
+
+    private String read(SelectionKey key) throws IOException {
         SocketChannel clientChannel = (SocketChannel) key.channel();
 
         String messageReceived = SocketChannelUtils.receiveString(clientChannel);
         System.out.println(messageReceived);
+        return messageReceived;
     }
 
-    private void accept(Selector selector, ServerSocketChannel serverSocketChannel) throws IOException {
-        SocketChannel playerChannel = serverSocketChannel.accept();
-        playerChannel.configureBlocking(false);
-
-        playerChannel.register(selector,SelectionKey.OP_READ);
-        SocketChannelUtils.sendString(playerChannel,"JOGO COMEÇOU");
-    }
     public void registerSocketChannel(Selector sel) throws IOException{
         for (Player player: gamePlayers){
             SocketChannel socketChannel = player.getChannel();
+
+            socketChannel.configureBlocking(false);
             socketChannel.register(sel, SelectionKey.OP_READ);
-            SocketChannelUtils.sendString(socketChannel, "JOGO COMEÇOUU");
+            System.out.println("lala");
+
+            SocketChannelUtils.sendString(socketChannel, "game started");
         }
     }
 
-    /*private String chooseWord() {
-        // Choose a word randomly from a list
-        List<String> word = Arrays.asList("Apple", "Bicycle", "Elephant", "Garden", "Monkey", "Pizza", "Rainbow", "Soccer", "Jazz", "Hamburger");
-        Random random = new Random();
-        int index = random.nextInt(word.size());
-        return word.get(index);
-    }
-
-    private List<Map.Entry<Character, Boolean>> getCharList(String wordChosen) {
-        // Generate a list of character entries for the chosen word
-        List<Map.Entry<Character, Boolean>> pairs = new ArrayList<>();
-        for (char c : wordChosen.toCharArray()) {
-            pairs.add(new AbstractMap.SimpleEntry<>(c, false));
-        }
-        return pairs;
-    }*/
-
-
-    /*public void updateNumOfTries(){
-        lock.lock();
-        int numOfTries = 1;
-        lock.unlock();
-    }*/
 }

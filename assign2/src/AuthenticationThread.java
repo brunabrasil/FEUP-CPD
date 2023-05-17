@@ -10,9 +10,11 @@ public class AuthenticationThread extends Thread {
     private Socket socket;
     private BufferedReader reader;
     private PrintWriter writer;
+    private SocketChannel socketChannel;
 
-    public AuthenticationThread(Socket userSockets){
-        this.socket = userSockets;
+    public AuthenticationThread(Socket userSocket, SocketChannel socketChannel){
+        this.socket = userSocket;
+        this.socketChannel = socketChannel;
         try {
             this.reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             this.writer = new PrintWriter(socket.getOutputStream(), true);
@@ -67,7 +69,8 @@ public class AuthenticationThread extends Thread {
                             Server.lockPlayersQueue.unlock();
 
                         }
-                        player.setChannel(this.socket.getChannel());
+                        player.setSocket(socket);
+                        player.setChannel(socketChannel);
                         writer.println("login successfully " + token.getToken());
 
                         break;
@@ -91,6 +94,8 @@ public class AuthenticationThread extends Thread {
                             Server.lockPlayersQueue.unlock();
 
                         }
+                        player.setSocket(socket);
+                        player.setChannel(socketChannel);
                         writer.println("registration successfully " + token.getToken());
 
                         break;

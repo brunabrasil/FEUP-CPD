@@ -1,3 +1,4 @@
+import java.net.Socket;
 import java.nio.channels.SocketChannel;
 
 public class Player {
@@ -6,6 +7,7 @@ public class Player {
     private boolean isLoggedIn;
     private TokenWithExpiration token;
     private SocketChannel channel;
+    private Socket socket;
 
     public Player(String username, String password) {
         this.username = username;
@@ -21,12 +23,20 @@ public class Player {
         return password;
     }
 
+    public Socket getSocket() {
+        return socket;
+    }
+
     public SocketChannel getChannel() {
         return channel;
     }
 
     public void setToken(TokenWithExpiration token) {
         this.token = token;
+    }
+
+    public void setSocket(Socket socket) {
+        this.socket = socket;
     }
 
     public void setChannel(SocketChannel socketChannel) {
