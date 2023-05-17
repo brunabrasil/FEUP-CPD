@@ -45,14 +45,17 @@ public class AuthenticationThread extends Thread {
                         TokenWithExpiration token;
                         if(t != null){
                             token = player.getPlayerToken();
-                            /*if(!token.getToken().equals(t) || token.hasExpired()){
+                            if(token != null){
+                                if(!token.getToken().equals(t) || token.hasExpired()){
 
-                                //colocar a nulo o token
-                                player.setToken(null);
+                                    //colocar a nulo o token
+                                    player.setToken(null);
 
-                                writer.println("login failed problem with token");
-                                break;
-                            }*/
+                                    writer.println("login failed problem with token");
+                                    break;
+                                }
+                            }
+
                         }
                         else {
                             token = Authentication.generateToken(username, 1);

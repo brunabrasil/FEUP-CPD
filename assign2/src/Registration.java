@@ -25,7 +25,7 @@ public class Registration {
                     writer.flush(); //limpa a stream
 
                     // adicionar ao map
-                    Player p = new Player(username, password, null);
+                    Player p = new Player(username, password);
                     Server.users.put(username, p);
                     Server.lockDB.unlock();
                     return p;
@@ -59,7 +59,7 @@ public class Registration {
             while (( line = reader.readLine()) != null) {
                 String[] data = line.split(",");
                 if (data.length == 2) {
-                    users.put(data[0], new Player(data[0], data[1], null));
+                    users.put(data[0], new Player(data[0], data[1]));
                 }
             }
         } catch (IOException e) {

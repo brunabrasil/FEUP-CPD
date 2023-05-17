@@ -7,11 +7,10 @@ public class Player {
     private TokenWithExpiration token;
     private SocketChannel channel;
 
-    public Player(String username, String password, TokenWithExpiration token) {
+    public Player(String username, String password) {
         this.username = username;
         this.password = password;
         this.isLoggedIn = true;
-        this.token = token;
     }
 
     public String getUsername() {
