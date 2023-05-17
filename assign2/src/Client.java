@@ -2,6 +2,7 @@
 
 import java.net.*;
 import java.io.*;
+import java.nio.channels.SocketChannel;
 import java.util.Scanner;
 
 public class Client {
@@ -46,7 +47,7 @@ public class Client {
                         }
                         String opt = "2"; //vai fazer nova conexao por default
                         if(token != null){
-                            System.out.println("\nYou have lost a connection! 1 - Resume the connection \n2 - Create a new connection\n");
+                            System.out.println("\nYou have lost a connection!\n1 - Resume the connection \n2 - Create a new connection\n");
                             opt = scan.nextLine();
                         }
 
@@ -101,7 +102,11 @@ public class Client {
                 }
             }
 
+            SocketChannel socketChannel = socket.getChannel();
+            socketChannel.configureBlocking(false);
+
             while(true){
+                System.out.println("Message::"+SocketChannelUtils.receiveString(socketChannel));
                 //gameloop
             }
         } catch (UnknownHostException ex) {

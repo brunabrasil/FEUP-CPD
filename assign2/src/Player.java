@@ -1,9 +1,11 @@
+import java.nio.channels.SocketChannel;
 
 public class Player {
     private String username;
     private String password;
     private boolean isLoggedIn;
     private TokenWithExpiration token;
+    private SocketChannel channel;
 
     public Player(String username, String password, TokenWithExpiration token) {
         this.username = username;
@@ -20,10 +22,17 @@ public class Player {
         return password;
     }
 
+    public SocketChannel getChannel() {
+        return channel;
+    }
+
     public void setToken(TokenWithExpiration token) {
         this.token = token;
     }
 
+    public void setChannel(SocketChannel socketChannel) {
+        this.channel = socketChannel;
+    }
 
     public boolean isLoggedIn() {
         return isLoggedIn;

@@ -1,18 +1,15 @@
 
 import java.io.*;
 import java.net.*;
+import java.nio.channels.ServerSocketChannel;
 import java.time.LocalTime;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.locks.ReentrantLock;
 
-/**
- * This program demonstrates a simple TCP/IP socket server.
- *
- * @author www.codejava.net
- */
 public class Server {
+    protected static int port;
     private static int poolsize = 2;
     private static ExecutorService executor;
     protected static Map<String, Player> users = new HashMap<>();
@@ -26,14 +23,13 @@ public class Server {
     public static void main(String[] args) {
 
         if (args.length < 1) return;
-        int port = Integer.parseInt(args[0]);
+        port = Integer.parseInt(args[0]);
 
         //ler o ficheiro e guardar no map
         users = Registration.readUserFile();
         executor = Executors.newFixedThreadPool(poolsize);
 
         try (ServerSocket serverSocket = new ServerSocket(port)) {
-
             System.out.println("Server is listening on port " + port);
             int timesPrinted = 0;
             while (true) {
@@ -47,18 +43,17 @@ public class Server {
                 // check if there are enough players to start a game
                 if (Server.playersQueue.size() >= 3) {
                     // create a new game thread
-                    System.out.println(playersQueue);
                     List<Player> gamePlayers = new ArrayList<>();
                     for (int i = 0; i < 3; i++) {
                         gamePlayers.add(playersQueue.poll());
                     }
 
                     String gameId = UUID.randomUUID().toString();
-                    Server.playersInGame.put(gameId, gamePlayers);
-                    for (Player player : gamePlayers) {
+                    //Server.playersInGame.put(gameId, gamePlayers);
+                    /*for (Player player : gamePlayers) {
                         Server.userCurrentGame.put(player.getUsername(), gameId);
-                    }
-                    executor.submit(new GameThread(gamePlayers, gameId, gamePlayers));
+                    }*/
+                    executor.submit(new GameThread(gamePlayers, gameId));
                 }
 
                 Socket socket = serverSocket.accept();
