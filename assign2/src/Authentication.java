@@ -1,6 +1,7 @@
 
 import java.io.BufferedReader;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
@@ -16,7 +17,7 @@ public class Authentication {
 
     public static TokenWithExpiration generateToken(String playerName, int expirationDays) {
         String token = generateRandomToken(); // Generate a random token
-        LocalDateTime expirationDate = LocalDateTime.now().plus(expirationDays, ChronoUnit.DAYS);
+        LocalDateTime expirationDate = LocalDateTime.now().plus(5, ChronoUnit.SECONDS);
         TokenWithExpiration tokenWithExpiration = new TokenWithExpiration(token, expirationDate);
 
         return tokenWithExpiration;
@@ -55,6 +56,14 @@ public class Authentication {
         }
 
         return sb.toString();
+    }
+
+    public static void writeTokenToFile(String username, String token){
+        try (FileWriter fileWriter = new FileWriter("token_" + username + ".txt")) {
+            fileWriter.write(token);
+        } catch (IOException e) {
+            // Handle the exception appropriately
+        }
     }
 
 }

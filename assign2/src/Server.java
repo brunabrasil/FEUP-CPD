@@ -47,7 +47,7 @@ public class Server {
                 SocketChannel clientChannel = serverSocketChannel.accept();
                 Socket clientSocket = clientChannel.socket();
 
-                AuthenticationThread thread = new AuthenticationThread(clientSocket, clientChannel);
+                AuthenticationThread thread = new AuthenticationThread(clientSocket, clientChannel, queueThread);
                 System.out.println("Starting new Thread");
                 thread.start();
 

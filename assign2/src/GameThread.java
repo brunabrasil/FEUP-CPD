@@ -22,6 +22,8 @@ public class GameThread extends Thread {
     private ServerSocketChannel serverSocketChannel;
     private int num = 5;
 
+    public volatile boolean endGame = false;
+
     public GameThread(List <Player> players, String gameId){
         this.gameId = gameId;
         this.gamePlayers = players;
@@ -32,7 +34,7 @@ public class GameThread extends Thread {
             Selector selector = Selector.open();
             registerSocketChannel(selector);
 
-            while (true){
+            while (!endGame){
                 selector.select();
                 Iterator<SelectionKey> iterator = selector.selectedKeys().iterator();
 
@@ -44,12 +46,24 @@ public class GameThread extends Thread {
                         continue;
                     }
                     if(key.isReadable()){
+                        SocketChannel clientChannel = (SocketChannel) key.channel();
                         String response = read(key);
-                        readGuess(key, response);
+                        response = readGuess(key, response);
+
+                        if (response.startsWith("Correct")) {
+                            endGame = true;
+                        }
+                        else {
+                            SocketChannelUtils.sendString(clientChannel, response);
+
+                        }
                     }
-
                 }
+            }
+            for (Player player: gamePlayers){
+                SocketChannel socketChannel = player.getChannel();
 
+                SocketChannelUtils.sendString(socketChannel, "game ended - PLAYER TAL guessed the right number (" + num + ")");
             }
 
         } catch (IOException e) {
@@ -57,7 +71,7 @@ public class GameThread extends Thread {
         }
     }
 
-    private void readGuess(SelectionKey key, String guess) throws IOException {
+    private String readGuess(SelectionKey key, String guess) throws IOException {
         SocketChannel clientChannel = (SocketChannel) key.channel();
 
         if (guess != null) {
@@ -68,12 +82,16 @@ public class GameThread extends Thread {
                 message = "Correct guess!";
             } else if (clientNumber > num) {
                 message = "Too high!";
-            } else {
+            } else if (clientNumber < num) {
                 message = "Too low!";
+            } else {
+                message = "Invalid";
             }
+            return message;
 
-            SocketChannelUtils.sendString(clientChannel, message);
         }
+
+        return "";
     }
 
 
@@ -81,7 +99,7 @@ public class GameThread extends Thread {
         SocketChannel clientChannel = (SocketChannel) key.channel();
 
         String messageReceived = SocketChannelUtils.receiveString(clientChannel);
-        System.out.println(messageReceived);
+
         return messageReceived;
     }
 
@@ -91,7 +109,6 @@ public class GameThread extends Thread {
 
             socketChannel.configureBlocking(false);
             socketChannel.register(sel, SelectionKey.OP_READ);
-            System.out.println("lala");
 
             SocketChannelUtils.sendString(socketChannel, "game started");
         }

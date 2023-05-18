@@ -79,12 +79,7 @@ public class Client {
             System.out.println(response);
 
             if (response.split(" ")[1].equals("successfully")){
-
-                try (FileWriter fileWriter = new FileWriter("token_" + username + ".txt")) {
-                    fileWriter.write(response.split(" ")[2]);
-                } catch (IOException e) {
-                    // Handle the exception appropriately
-                }
+                Authentication.writeTokenToFile(username, response.split(" ")[2]);
                 break;
             }
             else if(response.split(" ")[1].equals("failed")){
@@ -104,21 +99,38 @@ public class Client {
 
         }
 
-        //game
-        String message = SocketChannelUtils.receiveString(socketChannel);
-        System.out.println(message);
 
-        if(message.equals("game started")){
-            while (true){
+        while (true){
+
+            //game
+            String message = SocketChannelUtils.receiveString(socketChannel);
+            System.out.println(message);
+
+            if(message.equals("game started") || message.startsWith("Too")) {
                 System.out.println("Choose a number to guess [1-100]");
                 String guess = scan.nextLine();
                 //FALTA: ver se ta nesse intervalo
+
+                if (guess.equals("quit")) {
+                    //FALTA: TRATAR DISSO colocar o jogador como nao logado e apagar a token
+                    System.out.println("Bye bye");
+                    break;
+                }
+
                 SocketChannelUtils.sendString(socketChannel, guess);
 
-                System.out.println(SocketChannelUtils.receiveString(socketChannel));
+            }
+            // Check if the game has ended
+            else if (message.startsWith("game ended")) {
+                break;
             }
 
         }
+        System.out.println("kakakak");
+
     }
+
+
+
 
 }
