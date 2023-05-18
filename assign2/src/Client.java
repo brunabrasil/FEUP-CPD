@@ -52,18 +52,28 @@ public class Client {
                         // The token file does not exist
                     }
                     String opt = "2"; //vai fazer nova conexao por default
-                    if(token != null){
-                        System.out.println("\nYou have lost a connection!\n1 - Resume the connection \n2 - Create a new connection\n");
-                        opt = scan.nextLine();
-                    }
+                    if(token != null) {
+                        while (true){
+                            System.out.println("\nYou have lost a connection!\n1 - Resume the connection \n2 - Create a new connection\n");
+                            opt = scan.nextLine();
 
-                    OutputStream output = socket.getOutputStream();
-                    PrintWriter writer = new PrintWriter(output, true);
-                    if(opt.equals("2")){
-                        writer.println("login " + username + " " + password);
-                    }
-                    else if(opt.equals("1")){
-                        writer.println("login " + username + " " + password + " " + token);
+                            OutputStream output = socket.getOutputStream();
+                            PrintWriter writer = new PrintWriter(output, true);
+
+                            if(opt.equals("2")){
+                                writer.println("login " + username + " " + password);
+                                break;
+                            }
+
+                            else if(opt.equals("1")){
+                                writer.println("login " + username + " " + password + " " + token);
+                                break;
+                            }
+
+                            else{
+                                continue;
+                            }
+                        }
                     }
 
                     break;
@@ -103,27 +113,22 @@ public class Client {
 
         }
 
+        /*ServerListener serverListener = new ServerListener(socketChannel);
+        Thread serverListenerThread = new Thread(serverListener);
+        serverListenerThread.start();*/
+
         while (true){
 
             //game
             String message = SocketChannelUtils.receiveString(socketChannel);
             System.out.println(message);
 
-            /*ExecutorService executor = Executors.newSingleThreadExecutor();
-            executor.execute(() -> {
-                try {
-                    listenToServer(socketChannel);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            });*/
 
             if(message.equals("game started") || message.startsWith("Too")) {
                 System.out.println("Choose a number to guess [1-100]");
                 String guess = scan.nextLine();
 
-                /*                 String guess = readUserInputWithTimeout();
-*/
+                //String guess = readUserInputWithTimeout();
                 //FALTA: ver se ta nesse intervalo
 
                 if (guess.equals("quit")) {
@@ -144,19 +149,6 @@ public class Client {
         System.out.println("kakakak");
 
     }
-
-
-    private static void listenToServer(SocketChannel socketChannel) throws IOException {
-        while (true) {
-            String message = SocketChannelUtils.receiveString(socketChannel);
-
-            if (message.startsWith("game ended")) {
-                break;
-            }
-        }
-    }
-
-
 
     private static String readUserInputWithTimeout() throws IOException {
         BufferedReader userInputReader = new BufferedReader(new InputStreamReader(System.in));

@@ -20,7 +20,8 @@ public class GameThread extends Thread {
     private BufferedReader reader;
     private PrintWriter writer;
     private ServerSocketChannel serverSocketChannel;
-    private int num = generateRandomNumber();
+    private int num = 5;
+    private Player winner;
 
     public volatile boolean endGame = false;
 
@@ -51,7 +52,20 @@ public class GameThread extends Thread {
                         response = readGuess(key, response);
 
                         if (response.startsWith("Correct")) {
+                            for (Player player: gamePlayers){
+                                if(player.getChannel().equals(clientChannel)){
+                                    winner = player;
+                                }
+                            }
                             endGame = true;
+                        }
+                        else if (response.startsWith("Logout")) {
+                            for (Player player: gamePlayers){
+                                if(player.getChannel().equals(clientChannel)){
+                                    player.logout();
+                                    messagePlayerLeft();
+                                }
+                            }
                         }
                         else {
                             SocketChannelUtils.sendString(clientChannel, response);
@@ -63,14 +77,31 @@ public class GameThread extends Thread {
             for (Player player: gamePlayers){
                 SocketChannel socketChannel = player.getChannel();
 
-                SocketChannelUtils.sendString(socketChannel, "game ended - PLAYER TAL guessed the right number (" + num + ")");
+                SocketChannelUtils.sendString(socketChannel, "game ended - PLAYER " + winner.getUsername() +" guessed the right number (" + num + ")");
             }
 
-        } catch (IOException e) {
+        } catch (SocketException e){
+            messagePlayerLeft();
+
+        }
+        catch (IOException e) {
             e.printStackTrace();
         }
+
     }
 
+    private void messagePlayerLeft(){
+        for (Player player: gamePlayers){
+            SocketChannel socketChannel = player.getChannel();
+
+            try {
+                SocketChannelUtils.sendString(socketChannel, "game ended - a player left the game");
+            } catch (IOException ex) {
+                ex.printStackTrace();
+            }
+
+        }
+    }
     private String readGuess(SelectionKey key, String guess) throws IOException {
         SocketChannel clientChannel = (SocketChannel) key.channel();
 
