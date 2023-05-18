@@ -20,7 +20,7 @@ public class GameThread extends Thread {
     private BufferedReader reader;
     private PrintWriter writer;
     private ServerSocketChannel serverSocketChannel;
-    private int num = 5;
+    private int num = generateRandomNumber();
 
     public volatile boolean endGame = false;
 
@@ -114,4 +114,11 @@ public class GameThread extends Thread {
         }
     }
 
+    // function to generate random number from 0 to 100
+    public static int generateRandomNumber() {
+        Random rand = new Random();
+        return rand.nextInt(100);
+    }
+
 }
+

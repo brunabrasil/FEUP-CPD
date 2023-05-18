@@ -1,11 +1,15 @@
 
-
 import java.net.*;
 import java.io.*;
 import java.nio.channels.SocketChannel;
 import java.util.Scanner;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 public class Client {
+
+    private static final int TIMEOUT = 1000; // Timeout in milliseconds
 
     public static void main(String[] args) throws IOException {
         if (args.length < 2) return;
@@ -99,16 +103,27 @@ public class Client {
 
         }
 
-
         while (true){
 
             //game
             String message = SocketChannelUtils.receiveString(socketChannel);
             System.out.println(message);
 
+            /*ExecutorService executor = Executors.newSingleThreadExecutor();
+            executor.execute(() -> {
+                try {
+                    listenToServer(socketChannel);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            });*/
+
             if(message.equals("game started") || message.startsWith("Too")) {
                 System.out.println("Choose a number to guess [1-100]");
                 String guess = scan.nextLine();
+
+                /*                 String guess = readUserInputWithTimeout();
+*/
                 //FALTA: ver se ta nesse intervalo
 
                 if (guess.equals("quit")) {
@@ -131,6 +146,38 @@ public class Client {
     }
 
 
+    private static void listenToServer(SocketChannel socketChannel) throws IOException {
+        while (true) {
+            String message = SocketChannelUtils.receiveString(socketChannel);
 
+            if (message.startsWith("game ended")) {
+                break;
+            }
+        }
+    }
+
+
+
+    private static String readUserInputWithTimeout() throws IOException {
+        BufferedReader userInputReader = new BufferedReader(new InputStreamReader(System.in));
+        String userInput = null;
+
+        try {
+            // Wait for user input with a timeout
+            long startTime = System.currentTimeMillis();
+            while ((System.currentTimeMillis() - startTime) < TIMEOUT && !userInputReader.ready()) {
+                TimeUnit.MILLISECONDS.sleep(100); // Adjust the sleep duration as needed
+            }
+
+            if (userInputReader.ready()) {
+                userInput = userInputReader.readLine();
+            }
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        return userInput;
+    }
 
 }
+
