@@ -17,7 +17,7 @@ public class Authentication {
 
     public static TokenWithExpiration generateToken(String playerName, int expirationDays) {
         String token = generateRandomToken(); // Generate a random token
-        LocalDateTime expirationDate = LocalDateTime.now().plus(5, ChronoUnit.SECONDS);
+        LocalDateTime expirationDate = LocalDateTime.now().plus(30, ChronoUnit.SECONDS);
         TokenWithExpiration tokenWithExpiration = new TokenWithExpiration(token, expirationDate);
 
         return tokenWithExpiration;

@@ -19,25 +19,26 @@ public class QueueHandler implements Runnable {
                 for (Player player : Server.playersQueue) {
 
                     System.out.println(player.getUsername() + " " + player.getToken() + " "  + player.isLoggedIn());
+                    if(isSocketChannelOpen(player.getChannel())) {
+                        if (player.getToken() != null && player.getToken().hasExpired() && player.isLoggedIn()) {
 
-                    if (player.getToken() != null && player.getToken().hasExpired() && player.isLoggedIn()) {
+                            System.out.println("hereee");
 
-                        System.out.println("hereee");
-
-                        if(isSocketChannelOpen(player.getChannel())){
-                            System.out.println("hereee2");
                             TokenWithExpiration newToken = Authentication.generateToken(player.getUsername(), 1);
                             player.setToken(newToken);
-                            System.out.println(newToken.getToken());
                             Authentication.writeTokenToFile(player.getUsername(), newToken.getToken());
                         }
-                        else{
-                            System.out.println("hereee3");
-                            player.logout();
+                    }
+                    else {
+                        System.out.println("hereee3");
+                        player.logout();
+                        if (player.getToken() != null && player.getToken().hasExpired()) {
                             Server.playersQueue.remove(player); // desconectado e token expirado -> remove da queue
 
                         }
+
                     }
+
 
                 }
 
