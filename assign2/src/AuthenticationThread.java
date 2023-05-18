@@ -12,7 +12,7 @@ public class AuthenticationThread extends Thread {
     private PrintWriter writer;
     private SocketChannel socketChannel;
 
-    public AuthenticationThread(Socket userSocket, SocketChannel socketChannel){
+    public AuthenticationThread(Socket userSocket, SocketChannel socketChannel, Thread QueueHandler){
         this.socket = userSocket;
         this.socketChannel = socketChannel;
         try {
@@ -46,7 +46,7 @@ public class AuthenticationThread extends Thread {
 
                         TokenWithExpiration token;
                         if(t != null){
-                            token = player.getPlayerToken();
+                            token = player.getToken();
                             if(token != null){
                                 if(!token.getToken().equals(t) || token.hasExpired()){
 

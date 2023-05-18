@@ -47,7 +47,7 @@ public class Player {
         return isLoggedIn;
     }
 
-    public TokenWithExpiration getPlayerToken() {
+    public TokenWithExpiration getToken() {
         return token;
     }
 

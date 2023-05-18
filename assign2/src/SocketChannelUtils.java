@@ -1,4 +1,5 @@
 import java.io.IOException;
+import java.net.Socket;
 import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
 import java.nio.charset.StandardCharsets;
@@ -6,7 +7,6 @@ import java.nio.charset.StandardCharsets;
 public class SocketChannelUtils {
 
     public static void sendString(SocketChannel socketChannel, String message) throws IOException {
-        System.out.println("aquiii");
 
         byte[] messageBytes = message.getBytes(StandardCharsets.UTF_8);
         ByteBuffer buffer = ByteBuffer.allocate(4 + messageBytes.length);
@@ -27,6 +27,11 @@ public class SocketChannelUtils {
         while (lengthBuffer.hasRemaining()) {
             if (socketChannel.read(lengthBuffer) == -1) {
                 // The channel has been closed
+                try {
+                    socketChannel.socket().close();
+                } catch (IOException e){
+                    System.out.println("kkak");
+                }
                 throw new IOException("SocketChannel has been closed");
             }
         }
@@ -39,7 +44,7 @@ public class SocketChannelUtils {
         // Read the message content if there is data available
         while (messageBuffer.hasRemaining()) {
             if (socketChannel.read(messageBuffer) == -1) {
-                // The channel has been closed
+
                 throw new IOException("SocketChannel has been closed");
             }
         }
