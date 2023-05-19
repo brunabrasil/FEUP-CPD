@@ -28,7 +28,7 @@ public class Client {
             System.out.println("1 - LOGIN \n2 - REGISTER \nquit - LEAVE");
             String option = scan.nextLine();
             if (!option.equalsIgnoreCase("1") && !option.equalsIgnoreCase("2") && !option.equalsIgnoreCase("quit")) {
-                System.out.println("Invalid option");
+                System.out.println("Invalid option2");
                 continue;
             }
             if(option.equals("quit")) {
@@ -74,6 +74,10 @@ public class Client {
                                 continue;
                             }
                         }
+                    } else {
+                        OutputStream output = socket.getOutputStream();
+                        PrintWriter writer = new PrintWriter(output, true);
+                        writer.println("login " + username + " " + password);
                     }
 
                     break;
@@ -82,6 +86,7 @@ public class Client {
                     OutputStream outputReg = socket.getOutputStream();
                     PrintWriter writerReg = new PrintWriter(outputReg, true);
                     writerReg.println("register " + username + " " + password);
+                    break;
                 default:
                     System.out.println("Invalid option");
                     break;
@@ -108,6 +113,9 @@ public class Client {
                     }
                 }
 
+                continue;
+            }
+            else {
                 continue;
             }
 

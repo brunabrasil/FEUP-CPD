@@ -13,33 +13,29 @@ public class Registration {
     // Method to register a new user with a username and password
     public static Player registerUser(String username, String password) {
         //username ja existe
-        if(Server.lockDB.tryLock()) {
-            if (Server.users.containsKey(username)) {
+        Server.lockDB.lock();
+        if (Server.users.containsKey(username)) {
+            Server.lockDB.unlock();
+            return null;
+        } else {
+
+            try (FileWriter writer = new FileWriter(REGISTRATION_FILE, true)) {
+                // Append the username and password to the registration file
+                writer.write(username + "," + password + System.lineSeparator());
+                writer.flush(); //limpa a stream
+
+                // adicionar ao map
+                Player p = new Player(username, password);
+                Server.users.put(username, p);
+                Server.lockDB.unlock();
+                return p;
+            } catch (IOException e) {
+                System.out.println("Failed to register user");
                 Server.lockDB.unlock();
                 return null;
-            } else {
-
-                try (FileWriter writer = new FileWriter(REGISTRATION_FILE, true)) {
-                    // Append the username and password to the registration file
-                    writer.write(username + "," + password + System.lineSeparator());
-                    writer.flush(); //limpa a stream
-
-                    // adicionar ao map
-                    Player p = new Player(username, password);
-                    Server.users.put(username, p);
-                    Server.lockDB.unlock();
-                    return p;
-                } catch (IOException e) {
-                    System.out.println("Failed to register user");
-                    Server.lockDB.unlock();
-                    return null;
-                }
-
-
             }
+
         }
-        Server.lockDB.unlock();
-        return null;
     }
 
     public static Map<String, Player> readUserFile() {

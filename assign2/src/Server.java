@@ -17,7 +17,8 @@ public class Server {
     protected static ReentrantLock lockDB = new ReentrantLock();
     protected static ReentrantLock lockPlayersQueue = new ReentrantLock();
     protected static ReentrantLock lockToken = new ReentrantLock();
-    protected static Queue<Player> playersQueue = new LinkedList<>();
+    protected static Queue<Player> playersQueue = new PriorityQueue<>(Comparator.comparing(Player::getRank));
+    //protected static Queue<Player> playersQueue = new LinkedList<>();
     private static Map<String, String> userCurrentGame = new HashMap<>();
     private static Map<String, List<Player>> playersInGame = new HashMap<>();
 

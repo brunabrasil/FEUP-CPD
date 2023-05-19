@@ -18,11 +18,9 @@ public class QueueHandler implements Runnable {
                 Server.lockPlayersQueue.lock();
                 for (Player player : Server.playersQueue) {
 
-                    System.out.println(player.getUsername() + " " + player.getToken() + " "  + player.isLoggedIn());
+                    System.out.println("|" + player.getUsername() + " " + player.getToken().getToken() + " "  + player.isLoggedIn() + " " + player.getRank() + "|");
                     if(isSocketChannelOpen(player.getChannel())) {
                         if (player.getToken() != null && player.getToken().hasExpired() && player.isLoggedIn()) {
-
-                            System.out.println("hereee");
 
                             TokenWithExpiration newToken = Authentication.generateToken(player.getUsername(), 1);
                             player.setToken(newToken);
@@ -30,24 +28,21 @@ public class QueueHandler implements Runnable {
                         }
                     }
                     else {
-                        System.out.println("hereee3");
                         player.logout();
                         if (player.getToken() != null && player.getToken().hasExpired()) {
                             Server.playersQueue.remove(player); // desconectado e token expirado -> remove da queue
 
                         }
-
                     }
-
 
                 }
 
                 System.out.println("Queue size: " + Server.playersQueue.size());
 
-                if (Server.playersQueue.size() >= 2) {
+                if (Server.playersQueue.size() >= 3) {
                     // create a new game thread
                     List<Player> gamePlayers = new ArrayList<>();
-                    for (int i = 0; i < 2; i++) {
+                    for (int i = 0; i < 3; i++) {
                         gamePlayers.add(Server.playersQueue.poll());
                     }
 
@@ -66,7 +61,6 @@ public class QueueHandler implements Runnable {
 
     private boolean isSocketChannelOpen(SocketChannel socketChannel) {
         try {
-            System.out.println("Checking if socket channel is open");
             // Attempt a non-blocking read operation
 
             socketChannel.configureBlocking(false);
