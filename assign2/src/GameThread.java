@@ -54,7 +54,10 @@ public class GameThread extends Thread {
                         if (response.startsWith("Correct")) {
                             for (Player player: gamePlayers){
                                 if(player.getChannel().equals(clientChannel)){
+                                    player.setWinningPoints();
                                     winner = player;
+                                } else {
+                                    player.setLosingPoints();
                                 }
                             }
                             endGame = true;

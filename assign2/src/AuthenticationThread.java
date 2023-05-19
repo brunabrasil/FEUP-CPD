@@ -54,7 +54,7 @@ public class AuthenticationThread extends Thread {
                                     player.setToken(null);
 
                                     writer.println("login failed problem with token");
-                                    break;
+                                    continue;
                                 }
                             }
 
@@ -63,19 +63,19 @@ public class AuthenticationThread extends Thread {
                             token = Authentication.generateToken(username, 1);
                             player.setToken(token);
                         }
+                        Server.lockPlayersQueue.lock();
+                        Server.playersQueue.add(player);
+                        Server.lockPlayersQueue.unlock();
 
-                        if(Server.lockPlayersQueue.tryLock()){
-                            Server.playersQueue.add(player);
-                            Server.lockPlayersQueue.unlock();
-
-                        }
                         player.setSocket(socket);
                         player.setChannel(socketChannel);
+
                         writer.println("login successfully " + token.getToken());
 
                         break;
                     } else {
                         writer.println("login failed");
+                        continue;
                     }
 
                 } else if (Objects.equals(message.split(" ")[0], "register")) {
@@ -88,24 +88,25 @@ public class AuthenticationThread extends Thread {
                         TokenWithExpiration token = Authentication.generateToken(username, 1);
                         player.setToken(token);
 
-                        //trylock tenta uma vez e passa, é non blocking // lock fica travado e tentando ate conseguir, é blocking //decidir isso
-                        if(Server.lockPlayersQueue.tryLock()){
-                            Server.playersQueue.add(player);
-                            Server.lockPlayersQueue.unlock();
+                        Server.lockPlayersQueue.lock();
+                        Server.playersQueue.add(player);
+                        Server.lockPlayersQueue.unlock();
 
-                        }
                         player.setSocket(socket);
                         player.setChannel(socketChannel);
+
                         writer.println("registration successfully " + token.getToken());
 
                         break;
 
                     } else {
                         writer.println("registration failed");
+                        continue;
                     }
                 }
                 else {
-                    System.out.println("Invalid option");
+                    System.out.println("Invalid option3");
+                    continue;
                 }
 
             } catch (IOException ex) {

@@ -8,11 +8,13 @@ public class Player {
     private TokenWithExpiration token;
     private SocketChannel channel;
     private Socket socket;
+    private int points;
 
     public Player(String username, String password) {
         this.username = username;
         this.password = password;
         this.isLoggedIn = true;
+        this.points = 0;
     }
 
     public String getUsername() {
@@ -55,4 +57,29 @@ public class Player {
         this.isLoggedIn = false;
     }
 
+    public String getRank(){
+        if (points >= 50) {
+            return "A";
+        } else if (points >= 30) {
+            return "B";
+        } else if (points >= 20) {
+            return "C";
+        } else {
+            return  "D";
+        }
+    }
+
+    public void setWinningPoints(){
+        this.points += 10;
+    }
+
+    public void setLosingPoints(){
+        if(this.points < 0){
+            this.points = 0;
+        }
+        else {
+            this.points -= 0;
+        }
+
+    }
 }
