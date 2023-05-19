@@ -62,14 +62,6 @@ public class GameThread extends Thread {
                             }
                             endGame = true;
                         }
-                        else if (response.startsWith("Logout")) {
-                            for (Player player: gamePlayers){
-                                if(player.getChannel().equals(clientChannel)){
-                                    player.logout();
-                                    messagePlayerLeft();
-                                }
-                            }
-                        }
                         else {
                             SocketChannelUtils.sendString(clientChannel, response);
 
@@ -77,15 +69,29 @@ public class GameThread extends Thread {
                     }
                 }
             }
+            System.out.println("SIZE PLAYERS" + gamePlayers.size());
             for (Player player: gamePlayers){
                 SocketChannel socketChannel = player.getChannel();
 
                 SocketChannelUtils.sendString(socketChannel, "game ended - PLAYER " + winner.getUsername() +" guessed the right number (" + num + ")");
+                System.out.println("AQUIII");
+
+            }
+            for (Player player: gamePlayers){
+
+                playAgain(player);
+
             }
 
-        } catch (SocketException e){
-            messagePlayerLeft();
 
+        } catch (SocketException e){
+            //message to players that a player left
+            messagePlayerLeft();
+            for (Player player: gamePlayers){
+                //search for the player that left and log him out and delete token
+                //and the ones who didnt left, ask if they want to play again
+                playAgain(player);
+            }
         }
         catch (IOException e) {
             e.printStackTrace();
@@ -96,15 +102,17 @@ public class GameThread extends Thread {
     private void messagePlayerLeft(){
         for (Player player: gamePlayers){
             SocketChannel socketChannel = player.getChannel();
-
-            try {
-                SocketChannelUtils.sendString(socketChannel, "game ended - a player left the game");
-            } catch (IOException ex) {
-                ex.printStackTrace();
+            if(player.isSocketChannelOpen()){
+                try {
+                    SocketChannelUtils.sendString(socketChannel, "game ended - a player left the game");
+                } catch (IOException ex) {
+                    ex.printStackTrace();
+                }
             }
 
         }
     }
+
     private String readGuess(SelectionKey key, String guess) throws IOException {
         SocketChannel clientChannel = (SocketChannel) key.channel();
 
@@ -152,6 +160,36 @@ public class GameThread extends Thread {
     public static int generateRandomNumber() {
         Random rand = new Random();
         return rand.nextInt(100);
+    }
+
+    public static void playAgain(Player player) {
+        if(!player.isSocketChannelOpen()){
+            player.setToken(null);
+            player.logout();
+        }
+        else {
+            try {
+                while (true){
+                    String playAgain = SocketChannelUtils.receiveString(player.getChannel());
+
+                    if(playAgain.equals("yes")){
+                        Server.lockPlayersQueue.lock();
+                        Server.playersQueue.add(player);
+                        Server.lockPlayersQueue.unlock();
+                    }
+                    else if(playAgain.equals("no")){
+                        player.logout();
+                        break;
+                    }
+                }
+
+
+            } catch (IOException ex) {
+
+                ex.printStackTrace();
+            }
+
+        }
     }
 
 }
