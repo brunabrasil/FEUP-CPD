@@ -1,4 +1,6 @@
+import java.io.IOException;
 import java.net.Socket;
+import java.nio.ByteBuffer;
 import java.nio.channels.SocketChannel;
 
 public class Player {
@@ -81,5 +83,20 @@ public class Player {
             this.points -= 0;
         }
 
+    }
+
+    public boolean isSocketChannelOpen() {
+        try {
+            // Attempt a non-blocking read operation
+
+            this.channel.configureBlocking(false);
+            ByteBuffer buffer = ByteBuffer.allocate(1);
+            int bytesRead = this.channel.read(buffer);
+
+            return bytesRead != -1; // If bytesRead is -1, the client has disconnected
+        } catch (IOException e) {
+            System.out.println("Error while checking if socket channel is open");
+            return false;
+        }
     }
 }

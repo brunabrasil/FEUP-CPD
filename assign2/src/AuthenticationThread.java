@@ -57,18 +57,23 @@ public class AuthenticationThread extends Thread {
                                     continue;
                                 }
                             }
+                            else {
+                                writer.println("login failed - this token doesnt exists anymore. please create new connection");
+                                continue;
+                            }
 
                         }
                         else {
                             token = Authentication.generateToken(username, 1);
                             player.setToken(token);
                         }
-                        Server.lockPlayersQueue.lock();
-                        Server.playersQueue.add(player);
-                        Server.lockPlayersQueue.unlock();
 
                         player.setSocket(socket);
                         player.setChannel(socketChannel);
+
+                        Server.lockPlayersQueue.lock();
+                        Server.playersQueue.add(player);
+                        Server.lockPlayersQueue.unlock();
 
                         writer.println("login successfully " + token.getToken());
 
@@ -86,14 +91,15 @@ public class AuthenticationThread extends Thread {
                     Player player = Registration.registerUser(username, password);
                     if (player != null) {
                         TokenWithExpiration token = Authentication.generateToken(username, 1);
+
                         player.setToken(token);
+
+                        player.setSocket(socket);
+                        player.setChannel(socketChannel);
 
                         Server.lockPlayersQueue.lock();
                         Server.playersQueue.add(player);
                         Server.lockPlayersQueue.unlock();
-
-                        player.setSocket(socket);
-                        player.setChannel(socketChannel);
 
                         writer.println("registration successfully " + token.getToken());
 
@@ -105,7 +111,7 @@ public class AuthenticationThread extends Thread {
                     }
                 }
                 else {
-                    System.out.println("Invalid option3");
+                    System.out.println("Invalid option");
                     continue;
                 }
 

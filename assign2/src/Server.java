@@ -52,7 +52,6 @@ public class Server {
                 System.out.println("Starting new Thread");
                 thread.start();
 
-
             }
 
         } catch (IOException ex) {

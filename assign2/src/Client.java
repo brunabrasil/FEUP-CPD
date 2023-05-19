@@ -21,8 +21,10 @@ public class Client {
         socketChannel.connect(new InetSocketAddress(hostname, port));
         Socket socket = socketChannel.socket();
 
+        String username = null;
+
         Scanner scan = new Scanner(System.in);
-        System.out.println("\nWelcome to Hangman! Select an option to start the game\n");
+        System.out.println("\nWelcome to Guessing the number game! Select an option to start the game\n");
 
         while (true) {
             System.out.println("1 - LOGIN \n2 - REGISTER \nquit - LEAVE");
@@ -37,7 +39,7 @@ public class Client {
             }
 
             System.out.println("USERNAME: ");
-            String username = scan.nextLine();
+            username = scan.nextLine();
             System.out.println("PASSWORD: ");
             String password = scan.nextLine();
 
@@ -52,6 +54,8 @@ public class Client {
                         // The token file does not exist
                     }
                     String opt = "2"; //vai fazer nova conexao por default
+
+                    //if there is a token in a file
                     if(token != null) {
                         while (true){
                             System.out.println("\nYou have lost a connection!\n1 - Resume the connection \n2 - Create a new connection\n");
@@ -60,11 +64,12 @@ public class Client {
                             OutputStream output = socket.getOutputStream();
                             PrintWriter writer = new PrintWriter(output, true);
 
+                            //new connection, dont use token
                             if(opt.equals("2")){
                                 writer.println("login " + username + " " + password);
                                 break;
                             }
-
+                            //resume connection with token in file
                             else if(opt.equals("1")){
                                 writer.println("login " + username + " " + password + " " + token);
                                 break;
@@ -81,7 +86,7 @@ public class Client {
                     }
 
                     break;
-
+                //register
                 case "2":
                     OutputStream outputReg = socket.getOutputStream();
                     PrintWriter writerReg = new PrintWriter(outputReg, true);
@@ -98,19 +103,14 @@ public class Client {
             System.out.println(response);
 
             if (response.split(" ")[1].equals("successfully")){
+                //if authentication success, write token file
                 Authentication.writeTokenToFile(username, response.split(" ")[2]);
                 break;
             }
             else if(response.split(" ")[1].equals("failed")){
                 if(response.split(" ")[0].equals("login")){
-                    File tokenFile = new File("token_" + username + ".txt");
-                    if (tokenFile.exists()) {
-                        if (tokenFile.delete()) {
-                            System.out.println("Token file deleted successfully");
-                        } else {
-                            System.out.println("Failed to delete token file");
-                        }
-                    }
+                    //if login failed, delete file token
+                    deleteFileToken(username);
                 }
 
                 continue;
@@ -127,6 +127,7 @@ public class Client {
 
         while (true){
 
+            System.out.println("quero jogar de novo");
             //game
             String message = SocketChannelUtils.receiveString(socketChannel);
             System.out.println(message);
@@ -140,17 +141,28 @@ public class Client {
                 //FALTA: ver se ta nesse intervalo
 
                 if (guess.equals("quit")) {
-                    //FALTA: TRATAR DISSO colocar o jogador como nao logado e apagar a token
+                    deleteFileToken(username);
                     System.out.println("Bye bye");
                     break;
                 }
-
-                SocketChannelUtils.sendString(socketChannel, guess);
-
+                else {
+                    SocketChannelUtils.sendString(socketChannel, guess);
+                }
             }
             // Check if the game has ended
             else if (message.startsWith("game ended")) {
-                break;
+
+                System.out.println("\nDo you want to play again?\n1 - YES\n2 - NO");
+                String playAgain = scan.nextLine();
+                if(playAgain.equals("1")){
+                    SocketChannelUtils.sendString(socketChannel, "yes");
+                    continue;
+                } else if(playAgain.equals("2")){
+                    SocketChannelUtils.sendString(socketChannel, "no");
+
+                    break;
+                }
+
             }
 
         }
@@ -177,6 +189,17 @@ public class Client {
         }
 
         return userInput;
+    }
+
+    private static void deleteFileToken(String username){
+        File tokenFile = new File("token_" + username + ".txt");
+        if (tokenFile.exists()) {
+            if (tokenFile.delete()) {
+                System.out.println("Token file deleted successfully");
+            } else {
+                System.out.println("Failed to delete token file");
+            }
+        }
     }
 
 }

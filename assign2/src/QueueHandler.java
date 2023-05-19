@@ -5,6 +5,7 @@ import java.nio.channels.SocketChannel;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class QueueHandler implements Runnable {
     //Selector selector = Selector.open();
@@ -19,7 +20,7 @@ public class QueueHandler implements Runnable {
                 for (Player player : Server.playersQueue) {
 
                     System.out.println("|" + player.getUsername() + " " + player.getToken().getToken() + " "  + player.isLoggedIn() + " " + player.getRank() + "|");
-                    if(isSocketChannelOpen(player.getChannel())) {
+                    if(player.isSocketChannelOpen()) {
                         if (player.getToken() != null && player.getToken().hasExpired() && player.isLoggedIn()) {
 
                             TokenWithExpiration newToken = Authentication.generateToken(player.getUsername(), 1);
@@ -39,10 +40,16 @@ public class QueueHandler implements Runnable {
 
                 System.out.println("Queue size: " + Server.playersQueue.size());
 
-                if (Server.playersQueue.size() >= 3) {
+                // Filter the list to get only logged-in players
+
+                List<Player> loggedInPlayers = Server.playersQueue.stream().filter(Player::isLoggedIn).collect(Collectors.toList());
+
+                calculateRankDifference(loggedInPlayers);
+
+                if (Server.playersQueue.size() >= 2) {
                     // create a new game thread
                     List<Player> gamePlayers = new ArrayList<>();
-                    for (int i = 0; i < 3; i++) {
+                    for (int i = 0; i < 2; i++) {
                         gamePlayers.add(Server.playersQueue.poll());
                     }
 
@@ -59,18 +66,37 @@ public class QueueHandler implements Runnable {
     }
 
 
-    private boolean isSocketChannelOpen(SocketChannel socketChannel) {
-        try {
-            // Attempt a non-blocking read operation
+    public static List<Integer> calculateRankDifference(List<Player> loggedInPlayers) {
+        List<Integer> rankDifferences = new ArrayList<>();
 
-            socketChannel.configureBlocking(false);
-            ByteBuffer buffer = ByteBuffer.allocate(1);
-            int bytesRead = socketChannel.read(buffer);
+        // Iterate over the logged-in players in groups of three
+        for (int i = 0; i < loggedInPlayers.size(); i += 3) {
+            if (i + 2 < loggedInPlayers.size()) {
+                Player player1 = loggedInPlayers.get(i);
+                //Player player2 = loggedInPlayers.get(i + 1);
+                Player player3 = loggedInPlayers.get(i + 2);
 
-            return bytesRead != -1; // If bytesRead is -1, the client has disconnected
-        } catch (IOException e) {
-            System.out.println("Error while checking if socket channel is open");
-            return false;
+                // Calculate the difference in rank between the first and third player
+                int rankDifference = Math.abs(getRankIndex(player1.getRank()) - getRankIndex(player3.getRank()));
+                rankDifferences.add(rankDifference);
+            }
+        }
+
+        return rankDifferences;
+    }
+
+    // Helper method to assign a numerical index to the rank
+    private static int getRankIndex(String rank) {
+        switch (rank) {
+            case "A":
+                return 0;
+            case "B":
+                return 1;
+            case "C":
+                return 2;
+            default:
+                return 3;
         }
     }
+
 }
