@@ -5,6 +5,7 @@ import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
 import java.time.LocalTime;
 import java.util.*;
+import java.util.Scanner;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.locks.ReentrantLock;
@@ -16,11 +17,8 @@ public class Server {
     protected static Map<String, Player> users = new HashMap<>();
     protected static ReentrantLock lockDB = new ReentrantLock();
     protected static ReentrantLock lockPlayersQueue = new ReentrantLock();
-    protected static ReentrantLock lockToken = new ReentrantLock();
-    protected static Queue<Player> playersQueue = new PriorityQueue<>(Comparator.comparing(Player::getRank));
-    //protected static Queue<Player> playersQueue = new LinkedList<>();
-    private static Map<String, String> userCurrentGame = new HashMap<>();
-    private static Map<String, List<Player>> playersInGame = new HashMap<>();
+    protected static Queue<Player> playersQueue;
+    protected static int mode;
 
     public static void main(String[] args) {
 
@@ -30,6 +28,27 @@ public class Server {
         //ler o ficheiro e guardar no map
         users = Registration.readUserFile();
         executor = Executors.newFixedThreadPool(poolsize);
+
+        //SOUT PERGUNTAR O MODO DE JOGO
+        Scanner scan = new Scanner(System.in);
+        System.out.println("Please choose the game mode:");
+        System.out.println("1 - Simple Mode");
+        System.out.println("2 - Rank Mode");
+        String option = scan.nextLine();
+
+        switch(option){
+            case "1":
+                playersQueue = new LinkedList<>();
+                mode = 1;
+                break;
+            case "2":
+                playersQueue = new PriorityQueue<>(Comparator.comparing(Player::getRank));
+                mode = 2;
+                break;
+            default:
+
+                break;
+        }
 
         try  {
             ServerSocketChannel serverSocketChannel = ServerSocketChannel.open();

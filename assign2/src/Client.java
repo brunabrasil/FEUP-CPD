@@ -9,8 +9,6 @@ import java.util.concurrent.TimeUnit;
 
 public class Client {
 
-    private static final int TIMEOUT = 1000; // Timeout in milliseconds
-
     public static void main(String[] args) throws IOException {
         if (args.length < 2) return;
 
@@ -23,6 +21,8 @@ public class Client {
 
         String username = null;
 
+        boolean timeout = false;
+
         Scanner scan = new Scanner(System.in);
         System.out.println("\nWelcome to Guessing the number game! Select an option to start the game\n");
 
@@ -30,7 +30,7 @@ public class Client {
             System.out.println("1 - LOGIN \n2 - REGISTER \nquit - LEAVE");
             String option = scan.nextLine();
             if (!option.equalsIgnoreCase("1") && !option.equalsIgnoreCase("2") && !option.equalsIgnoreCase("quit")) {
-                System.out.println("Invalid option2");
+                System.out.println("Invalid option");
                 continue;
             }
             if(option.equals("quit")) {
@@ -115,81 +115,56 @@ public class Client {
 
                 continue;
             }
+            else if (response.split(" ")[0].equals("Timeout")){
+                timeout = true;
+                break;
+            }
             else {
                 continue;
             }
 
         }
 
-        /*ServerListener serverListener = new ServerListener(socketChannel);
-        Thread serverListenerThread = new Thread(serverListener);
-        serverListenerThread.start();*/
+        if(!timeout){
+            while (true){
 
-        while (true){
+                //game
+                String message = SocketChannelUtils.receiveString(socketChannel);
+                System.out.println(message);
 
-            System.out.println("quero jogar de novo");
-            //game
-            String message = SocketChannelUtils.receiveString(socketChannel);
-            System.out.println(message);
+                if(message.equals("game started") || message.startsWith("Too")) {
+                    System.out.println("Choose a number to guess [1-100]");
+                    String guess = scan.nextLine();
 
-            if(message.equals("game started") || message.startsWith("Too")) {
-                System.out.println("Choose a number to guess [1-100]");
-                String guess = scan.nextLine();
+                    //FALTA: ver se ta nesse intervalo
 
-                //FALTA: ver se ta nesse intervalo
-
-                if (guess.equals("quit")) {
-                    deleteFileToken(username);
-                    System.out.println("Bye bye");
-                    break;
+                    if (guess.equals("quit")) {
+                        deleteFileToken(username);
+                        System.out.println("Bye bye");
+                        break;
+                    }
+                    else {
+                        SocketChannelUtils.sendString(socketChannel, guess);
+                    }
                 }
-                else {
-                    SocketChannelUtils.sendString(socketChannel, guess);
-                    System.out.println("mandei guesss");
+                // Check if the game has ended
+                else if (message.startsWith("game ended")) {
+
+                    System.out.println("\nDo you want to play again?\n1 - YES\n2 - NO");
+                    String playAgain = scan.nextLine();
+
+                    if(playAgain.equals("1")){
+                        SocketChannelUtils.sendString(socketChannel, "yes");
+                        continue;
+                    }
+                    else if(playAgain.equals("2")){
+                        SocketChannelUtils.sendString(socketChannel, "no");
+                        break;
+                    }
+
                 }
             }
-            // Check if the game has ended
-            else if (message.startsWith("game ended")) {
-
-                System.out.println("\nDo you want to play again?\n1 - YES\n2 - NO");
-                String playAgain = scan.nextLine();
-
-                if(playAgain.equals("1")){
-                    SocketChannelUtils.sendString(socketChannel, "yes");
-                    System.out.println("mandei yessss");
-                    continue;
-                }
-                else if(playAgain.equals("2")){
-                    SocketChannelUtils.sendString(socketChannel, "no");
-                    break;
-                }
-
-            }
-
         }
-        System.out.println("kakakak");
-
-    }
-
-    private static String readUserInputWithTimeout() throws IOException {
-        BufferedReader userInputReader = new BufferedReader(new InputStreamReader(System.in));
-        String userInput = null;
-
-        try {
-            // Wait for user input with a timeout
-            long startTime = System.currentTimeMillis();
-            while ((System.currentTimeMillis() - startTime) < TIMEOUT && !userInputReader.ready()) {
-                TimeUnit.MILLISECONDS.sleep(100); // Adjust the sleep duration as needed
-            }
-
-            if (userInputReader.ready()) {
-                userInput = userInputReader.readLine();
-            }
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-
-        return userInput;
     }
 
     private static void deleteFileToken(String username){

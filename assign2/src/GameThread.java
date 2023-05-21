@@ -13,14 +13,13 @@ import proj.*;
 
 public class GameThread extends Thread {
 
-    //private static final int MAX_NUM_TRIES = 6; // Maximum number of tries for each player
     private List<Socket> sockets;
     String gameId;
     List<Player> gamePlayers;
     private BufferedReader reader;
     private PrintWriter writer;
     private ServerSocketChannel serverSocketChannel;
-    private int num = 5;
+    private int num = generateRandomNumber();
     private Player winner;
 
     public GameThread(List <Player> players, String gameId){
@@ -33,13 +32,12 @@ public class GameThread extends Thread {
         int counter = 0;
         try {
             Selector selector = Selector.open();
+            //start game and register player's socket channels
             registerSocketChannel(selector);
 
             while (counter  != gamePlayers.size()){
                 selector.select();
                 Iterator<SelectionKey> iterator = selector.selectedKeys().iterator();
-
-                System.out.println("endgameee " + endGame);
 
                 while (iterator.hasNext()){
                     SelectionKey key = iterator.next();
@@ -54,20 +52,18 @@ public class GameThread extends Thread {
                         //se o jogo ainda nao acabou, continuo a ver guesses
                         if(!endGame){
                             response = readGuess(key, response);
-                            System.out.println("\nGUESSS: "+ response);
                             if (response.startsWith("Correct")) {
                                 winner = getPlayerByChannel(clientChannel);
+                                //give points to the winner
                                 winner.setWinningPoints();
 
                                 for (Player player: gamePlayers){
-                                    /*if(player.getChannel().equals(clientChannel)){
-                                        player.setWinningPoints();
-                                        winner = player;
-                                    } else {
+                                    //remove points from the losers
+                                    if(!player.equals(winner)){
                                         player.setLosingPoints();
-                                    }*/
+                                    }
+
                                     SocketChannelUtils.sendString(player.getChannel(), "game ended - PLAYER " + winner.getUsername() +" guessed the right number (" + num + ")");
-                                    System.out.println("ASASASAAS");
                                 }
                                 endGame = true;
                             }
@@ -77,7 +73,6 @@ public class GameThread extends Thread {
                         }
                         //quando o jogo acabar, trato de ver se os jogadores querem jogar de novo ou nao
                         else {
-                            System.out.println("\nrespostaa " + response);
                             if(response.equals("yes")){
                                 Player player = getPlayerByChannel(clientChannel);
 
@@ -105,6 +100,7 @@ public class GameThread extends Thread {
                 //search for the player that left and log him out and delete token
                 //and the ones who didnt left, ask if they want to play again
                 playAgain(player);
+
             }
         }
         catch (IOException e) {
@@ -178,16 +174,13 @@ public class GameThread extends Thread {
 
     public static void playAgain(Player player) {
         if(!player.isSocketChannelOpen()){
-            System.out.println("canal fechado");
             player.setToken(null);
             player.logout();
         }
         else {
             try {
-                System.out.println("dentro do play again");
                 while (true){
                     String playAgain = SocketChannelUtils.receiveString(player.getChannel());
-                    System.out.println("play againn " + playAgain);
                     if(playAgain.equals("yes")){
                         Server.lockPlayersQueue.lock();
                         Server.playersQueue.add(player);
