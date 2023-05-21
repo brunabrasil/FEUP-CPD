@@ -44,9 +44,14 @@ public class Server {
             queueThread.start();
 
             while (true) {
+                System.out.println("Players:");
+                for (Player player : users.values()) {
+                    System.out.println("player: " + player.getUsername() + " | " + player.isLoggedIn());
+                }
 
                 SocketChannel clientChannel = serverSocketChannel.accept();
                 Socket clientSocket = clientChannel.socket();
+
 
                 AuthenticationThread thread = new AuthenticationThread(clientSocket, clientChannel, queueThread);
                 System.out.println("Starting new Thread");

@@ -15,7 +15,7 @@ public class Player {
     public Player(String username, String password) {
         this.username = username;
         this.password = password;
-        this.isLoggedIn = true;
+        this.isLoggedIn = false;
         this.points = 0;
     }
 
@@ -53,6 +53,10 @@ public class Player {
 
     public TokenWithExpiration getToken() {
         return token;
+    }
+
+    public void login() {
+        this.isLoggedIn = true;
     }
 
     public void logout() {
