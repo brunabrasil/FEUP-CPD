@@ -14,6 +14,16 @@
 | ines     | 123     |
 
 
+## Instructions
+
+### Run Server
+
+<kbd>java Server 8000</kbd>
+
+### Run Client
+
+<kbd>java Client localhost 8000</kbd>
+
 ## Introduction
 
 
@@ -96,4 +106,4 @@ If the authentication fails, it asks for user data again and this process restar
 ![](https://hackmd.io/_uploads/rJ6HDx_Hn.png)
 
 ### Flow Diagram
-![](https://hackmd.io/_uploads/H1sOAl_S3.png)
+![](https://hackmd.io/_uploads/HJc3gZuS3.png)
