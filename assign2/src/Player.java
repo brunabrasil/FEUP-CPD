@@ -80,11 +80,11 @@ public class Player {
     }
 
     public void setLosingPoints(){
-        if(this.points < 0){
+        if(this.points - 3 < 0){
             this.points = 0;
         }
         else {
-            this.points -= 0;
+            this.points -= 3;
         }
 
     }
@@ -92,14 +92,12 @@ public class Player {
     public boolean isSocketChannelOpen() {
         try {
             // Attempt a non-blocking read operation
-
             this.channel.configureBlocking(false);
             ByteBuffer buffer = ByteBuffer.allocate(1);
             int bytesRead = this.channel.read(buffer);
 
             return bytesRead != -1; // If bytesRead is -1, the client has disconnected
         } catch (IOException e) {
-            System.out.println("Error while checking if socket channel is open");
             return false;
         }
     }

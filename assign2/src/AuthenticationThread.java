@@ -24,107 +24,124 @@ public class AuthenticationThread extends Thread {
     }
 
     public void run() {
+        long startTime = System.currentTimeMillis();
+        long timeout = 7000; // Timeout duration in milliseconds
+
         while(true) {
             try {
-                String message = reader.readLine();
-                String[] response = message.split(" ");
-                if (response[0].equals("login")) {
+                // Check if the timeout has been exceeded
+                if (System.currentTimeMillis() - startTime > timeout) {
+                    System.out.println("Timeout exceeded. Exiting Authentication.");
+                    writer.println("Timeout exceeded. Exit Authentication");
 
-                    String username = response[1];
-                    String password = response[2];
-                    String t = null;
+                    break;
+                }
 
-                    if (Authentication.authenticatePlayer(username, password)) {
-                        if(response.length >=4){
-                            t = response[3]; // index out of bounds
-                        }
+                if (reader.ready()) {
+                    String message = reader.readLine();
 
-                        Server.lockDB.lock();
-                        Player player = Server.users.get(username);
-                        Server.lockDB.unlock();
+                    startTime = System.currentTimeMillis();
 
-                        TokenWithExpiration token;
-                        if(t != null){
+                    String[] response = message.split(" ");
+                    if (response[0].equals("login")) {
 
-                            token = player.getToken();
-                            if(token != null){
-                                if(!token.getToken().equals(t) || token.hasExpired()){
-                                    //colocar a nulo o token
-                                    player.setToken(null);
+                        String username = response[1];
+                        String password = response[2];
+                        String t = null;
 
-                                    writer.println("login failed problem with token");
+                        if (Authentication.authenticatePlayer(username, password)) {
+                            if(response.length >=4){
+                                t = response[3]; // index out of bounds
+                            }
+
+                            Server.lockDB.lock();
+                            Player player = Server.users.get(username);
+                            Server.lockDB.unlock();
+
+                            TokenWithExpiration token;
+                            if(t != null){
+
+                                token = player.getToken();
+                                if(token != null){
+                                    if(!token.getToken().equals(t) || token.hasExpired()){
+                                        //colocar a nulo o token
+                                        player.setToken(null);
+
+                                        writer.println("login failed problem with token");
+                                        continue;
+                                    }
+                                }
+                                else {
+                                    writer.println("login failed - this token doesnt exists anymore. please create new connection");
                                     continue;
                                 }
+
                             }
                             else {
-                                writer.println("login failed - this token doesnt exists anymore. please create new connection");
-                                continue;
+
+                                token = Authentication.generateToken(username, 1);
+                                player.setToken(token);
                             }
 
-                        }
-                        else {
+                            player.setSocket(socket);
+                            player.setChannel(socketChannel);
+                            player.login();
 
-                            token = Authentication.generateToken(username, 1);
+                            Server.lockPlayersQueue.lock();
+                            Server.playersQueue.add(player);
+                            Server.lockPlayersQueue.unlock();
+
+                            writer.println("login successfully " + token.getToken());
+
+                            break;
+                        } else {
+                            writer.println("login failed");
+                            continue;
+                        }
+
+                    } else if (Objects.equals(message.split(" ")[0], "register")) {
+
+                        String username = message.split(" ")[1];
+                        String password = message.split(" ")[2];
+
+                        Player player = Registration.registerUser(username, password);
+                        if (player != null) {
+                            TokenWithExpiration token = Authentication.generateToken(username, 1);
+
                             player.setToken(token);
+
+                            player.login();
+                            player.setSocket(socket);
+                            player.setChannel(socketChannel);
+
+                            Server.lockPlayersQueue.lock();
+                            Server.playersQueue.add(player);
+                            Server.lockPlayersQueue.unlock();
+
+                            writer.println("registration successfully " + token.getToken());
+
+                            break;
+
+                        } else {
+                            writer.println("registration failed");
+                            continue;
                         }
-
-                        player.setSocket(socket);
-                        player.setChannel(socketChannel);
-                        player.login();
-
-                        Server.lockPlayersQueue.lock();
-                        Server.playersQueue.add(player);
-                        Server.lockPlayersQueue.unlock();
-
-                        System.out.println("aquii");
-
-                        writer.println("login successfully " + token.getToken());
-
-                        break;
-                    } else {
-                        writer.println("login failed");
-                        continue;
                     }
-
-                } else if (Objects.equals(message.split(" ")[0], "register")) {
-
-                    String username = message.split(" ")[1];
-                    String password = message.split(" ")[2];
-
-                    Player player = Registration.registerUser(username, password);
-                    if (player != null) {
-                        TokenWithExpiration token = Authentication.generateToken(username, 1);
-
-                        player.setToken(token);
-
-                        player.login();
-                        player.setSocket(socket);
-                        player.setChannel(socketChannel);
-
-                        Server.lockPlayersQueue.lock();
-                        Server.playersQueue.add(player);
-                        Server.lockPlayersQueue.unlock();
-
-                        writer.println("registration successfully " + token.getToken());
-
-                        break;
-
-                    } else {
-                        writer.println("registration failed");
+                    else {
+                        System.out.println("Invalid option");
                         continue;
                     }
                 }
                 else {
-                    System.out.println("Invalid option");
-                    continue;
+                    Thread.sleep(100);
                 }
 
-            } catch (IOException ex) {
+
+            } catch (IOException | InterruptedException ex) {
                 System.out.println("Server exception: " + ex.getMessage());
                 ex.printStackTrace();
             }
         }
-        System.out.println("saiii");
     }
 
 }

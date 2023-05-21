@@ -30,7 +30,6 @@ public class SocketChannelUtils {
                 try {
                     socketChannel.socket().close();
                 } catch (IOException e){
-                    System.out.println("kkak");
                 }
                 throw new IOException("SocketChannel has been closed");
             }
