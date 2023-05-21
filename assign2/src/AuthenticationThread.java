@@ -35,7 +35,6 @@ public class AuthenticationThread extends Thread {
                     String t = null;
 
                     if (Authentication.authenticatePlayer(username, password)) {
-
                         if(response.length >=4){
                             t = response[3]; // index out of bounds
                         }
@@ -46,10 +45,10 @@ public class AuthenticationThread extends Thread {
 
                         TokenWithExpiration token;
                         if(t != null){
+
                             token = player.getToken();
                             if(token != null){
                                 if(!token.getToken().equals(t) || token.hasExpired()){
-
                                     //colocar a nulo o token
                                     player.setToken(null);
 
@@ -64,16 +63,20 @@ public class AuthenticationThread extends Thread {
 
                         }
                         else {
+
                             token = Authentication.generateToken(username, 1);
                             player.setToken(token);
                         }
 
                         player.setSocket(socket);
                         player.setChannel(socketChannel);
+                        player.login();
 
                         Server.lockPlayersQueue.lock();
                         Server.playersQueue.add(player);
                         Server.lockPlayersQueue.unlock();
+
+                        System.out.println("aquii");
 
                         writer.println("login successfully " + token.getToken());
 
@@ -94,6 +97,7 @@ public class AuthenticationThread extends Thread {
 
                         player.setToken(token);
 
+                        player.login();
                         player.setSocket(socket);
                         player.setChannel(socketChannel);
 

@@ -132,12 +132,10 @@ public class Client {
             String message = SocketChannelUtils.receiveString(socketChannel);
             System.out.println(message);
 
-
             if(message.equals("game started") || message.startsWith("Too")) {
                 System.out.println("Choose a number to guess [1-100]");
                 String guess = scan.nextLine();
 
-                //String guess = readUserInputWithTimeout();
                 //FALTA: ver se ta nesse intervalo
 
                 if (guess.equals("quit")) {
@@ -147,6 +145,7 @@ public class Client {
                 }
                 else {
                     SocketChannelUtils.sendString(socketChannel, guess);
+                    System.out.println("mandei guesss");
                 }
             }
             // Check if the game has ended
@@ -154,12 +153,14 @@ public class Client {
 
                 System.out.println("\nDo you want to play again?\n1 - YES\n2 - NO");
                 String playAgain = scan.nextLine();
+
                 if(playAgain.equals("1")){
                     SocketChannelUtils.sendString(socketChannel, "yes");
+                    System.out.println("mandei yessss");
                     continue;
-                } else if(playAgain.equals("2")){
+                }
+                else if(playAgain.equals("2")){
                     SocketChannelUtils.sendString(socketChannel, "no");
-
                     break;
                 }
 
