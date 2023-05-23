@@ -8,9 +8,6 @@ import java.nio.channels.SocketChannel;
 import java.util.*;
 import java.util.concurrent.locks.ReentrantLock;
 
-import proj.*;
-
-
 public class GameThread extends Thread {
 
     private List<Socket> sockets;
